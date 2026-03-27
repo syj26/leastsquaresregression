@@ -130,6 +130,32 @@ public class Matrix {
     m = new ArrayList<double[] >();
   }
 
+  private double magnitude() {
+    double ans=0;
+    for (int i=0; i<height(); i++) {
+      ans+=m.get(i)[0]*m.get(i)[0];
+    }
+    return Math.sqrt(ans);
+  }
+
+  public void unitize() {
+    double mag = magnitude();
+    for (int i=0; i<height(); i++) {
+      scl(i, 1/mag);
+    }
+  }
+
+  public void avgZero() {
+    double sum=0;
+    for (int i=0; i<height(); i++) {
+      sum+=m.get(i)[0];
+    }
+    sum/=height();
+    for (int i=0; i<height(); i++) {
+      m.get(i)[0]-=sum;
+    }
+  }
+
   public Matrix transpose() {
     Matrix mat = new Matrix(height());
     for (int i=0; i<rowLength(); i++) {

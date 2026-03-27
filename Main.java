@@ -74,18 +74,27 @@ public class Main {
       System.out.println("Pirate Attacks: "+Arrays.toString(pirateAttacks));
       System.out.println("Average Temperature: "+Arrays.toString(avgTemp));
       Matrix M = new Matrix(2);
-      Matrix y = new Matrix(1);
+      Matrix x = new Matrix(1);
+      Matrix v = new Matrix(1);
       for (int i=0; i<avgTemp.length; i++) {
+        x.addRow(new double[]{avgTemp[i]});
         M.addRow(new double[]{avgTemp[i], 1});
       }
       for (int i=0; i<pirateAttacks.length; i++) {
-        y.addRow(new double[]{pirateAttacks[i]});
+        v.addRow(new double[]{pirateAttacks[i]});
       }
       Matrix MTMinv = M.copy();
+      Matrix y = v.copy();
       MTMinv.mult(MTMinv.transpose());
       MTMinv.invert();
-      y.mult(M.transpose());
-      y.mult(MTMinv);
-      System.out.println(y.unformattedToString());
+      v.mult(M.transpose());
+      v.mult(MTMinv);
+      System.out.println(v.unformattedToString());
+      y.avgZero();
+      x.avgZero();
+      y.unitize();
+      x.unitize();
+      y.mult(x.transpose());
+      System.out.println("Correlation coefficient: "+y.get(0)[0]);
     }
 }
