@@ -36,6 +36,76 @@ public class Matrix {
     m=newMatrix;
   }//mult
 
+  public void rref() {
+    for (int c=0; c<rowLength(); c++) {
+      if (c<height()) {
+        if (m.get(c)[c]==0) {
+          boolean found=false;
+          int i=c+1;
+          while (!found && i<height()) {
+            if (m.get(i)[c]!=0) {
+              swap(i, c);
+              found=true;
+            } else {
+              i++;
+            }
+          }
+        }
+        scl(c, 1/m.get(c)[c]);
+        for (int i=0; i<height(); i++) {
+          if (i!=c) {
+            lincomb(i, c, -1*m.get(i)[c]);
+          }
+        }
+      }
+    }
+  }
+
+  public void invert() {
+    if (rowLength()!=height()) {
+      throw new IllegalArgumentException("matrix must be square");
+    } else {
+      Matrix aug = new Matrix(rowLength()*2);
+      for (int i=0; i<height(); i++) {
+        double[] row = new double[rowLength()*2];
+        for (int j=0; j<rowLength(); j++) {
+          row[j]=get(i)[j];
+        }
+        row[rowLength()+i]=1;
+        aug.addRow(row);
+      }
+      aug.rref();
+      for (int i=0; i<height(); i++) {
+        double[] row = new double[rowLength()];
+        for (int j=0; j<rowLength(); j++) {
+          row[j]=aug.get(i)[rowLength()+j];
+        }
+        m.set(i, row);
+      }
+    }
+  }
+
+  //swap rows a and b
+  private void swap(int a, int b) {
+    double[] temp = Arrays.copyOf(get(a), rowLength());
+    m.set(a, get(b));
+    m.set(b, temp);
+  }
+
+  //mutliply row r by scalar s
+  private void scl(int r, double s) {
+    for (int i=0; i<rowLength(); i++) {
+      get(r)[i]*=s;
+    }
+  }
+
+  //add s*row b to row a
+  private void lincomb(int a, int b, double s) {
+    for (int i=0; i<rowLength(); i++) {
+      get(a)[i]+=s*get(b)[i];
+    }
+  }
+  
   public int height() {
     return m.size();
   }
@@ -51,13 +121,25 @@ public class Matrix {
   public Matrix copy() {
     Matrix mat = new Matrix(rowLength);
     for (int i=0; i<height(); i++) {
-        mat.addRow(get(i));
+        mat.addRow(Arrays.copyOf(get(i), rowLength()));
     }
     return mat;
   }
 
   public void clear() {
     m = new ArrayList<double[] >();
+  }
+
+  public Matrix transpose() {
+    Matrix mat = new Matrix(height());
+    for (int i=0; i<rowLength(); i++) {
+      double[] row = new double[height()];
+      for (int j=0; j<height(); j++) {
+        row[j]=get(j)[i];
+      }
+      mat.addRow(row);
+    }
+    return mat;
   }
 
   public double roundTenth(double x) {
@@ -72,6 +154,21 @@ public class Matrix {
     }
   }
 
+  public String unformattedToString() {
+   String s = "";
+    for (int i=0; i<height(); i++) {
+      s+="|";
+      for (int j=0; j<rowLength(); j++) {
+        s+=m.get(i)[j];
+        if (j<rowLength()-1) {
+            s+=" ";
+        }
+      }
+      s+="|\n";
+    }
+    return s;
+  }
+
   public String toString() {
     String s = "";
     int[][] lengths = new int[height()][rowLength()];
@@ -80,6 +177,12 @@ public class Matrix {
         int maxL = 0;
         for (int r=0; r<height(); r++) {
             lengths[r][c]=(int)Math.log10(get(r)[c])+3;
+            if (get(r)[c]<0) {
+              lengths[r][c]++;
+            }
+            if (get(r)[c]==0) {
+              lengths[r][c]=3;
+            }
             if (lengths[r][c]>maxL) {
                 maxL=lengths[r][c];
             }
